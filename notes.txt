@@ -1,0 +1,2 @@
+\PhysicalDisk(*)\% Disk Read Time
+\PhysicalDisk(*)\% Disk Write Time

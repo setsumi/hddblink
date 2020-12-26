@@ -51,5 +51,20 @@
     <Image Include="hddblink.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Icon_1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icon_2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icon_3.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icon_4.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icon_5.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
