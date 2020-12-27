@@ -7,9 +7,10 @@
 
 #define MAX_LOADSTRING 100
 #define	WM_USER_SHELLICON WM_USER + 1
-#define	POLL_INTERVAL 300
+#define	POLL_INTERVAL 200
 
 #pragma comment(lib, "pdh.lib")
+//#pragma comment(lib, "Ws2_32.lib")
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -21,6 +22,7 @@ HWND ghWnd;
 HICON gIcons[5];
 HQUERY Query = NULL;
 HCOUNTER gCounter[2];
+bool gStop = false;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -49,9 +51,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_HDDBLINK));
+	//HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_HDDBLINK));
 
 	// TODO: Place code here.
+	SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+	//SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+
 	nidApp.cbSize = sizeof(NOTIFYICONDATA);
 	nidApp.hWnd = (HWND)ghWnd;
 	nidApp.uID = IDI_SYSTRAY;
@@ -82,22 +87,39 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		MessageBox(NULL, L"PdhAddCounter (write) failed", L"", MB_ICONERROR | MB_OK);
 	}
 
-
-	SetTimer(ghWnd, IDT_TIMER1, POLL_INTERVAL, NULL);
+	//SetTimer(ghWnd, IDT_TIMER1, POLL_INTERVAL, NULL);
 
 	// Main message loop:
 	MSG msg;
-	while (GetMessage(&msg, nullptr, 0, 0))
+	//DWORD got;
+	//while (true/*GetMessage(&msg, nullptr, 0, 0)*/)
+	for (;;)
 	{
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+		if (GetQueueStatus(QS_ALLINPUT))
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE | PM_NOYIELD))
+			{
+				//if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+				//{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+				//}//
+				if (msg.message == WM_QUIT) break;
+			}
+		}
+
+		if (!gStop)
+		{
+			PollHdd();
+			Sleep(POLL_INTERVAL);
+		}
+		else {
+			Sleep(25);
 		}
 	}
 
 	// Cleanup
-	KillTimer(ghWnd, IDT_TIMER1);
+	//KillTimer(ghWnd, IDT_TIMER1);
 	Shell_NotifyIcon(NIM_DELETE, &nidApp);
 	if (Query)
 	{
@@ -157,8 +179,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return FALSE;
 	}
 
-	ShowWindow(ghWnd, nCmdShow);
-	UpdateWindow(ghWnd);
+	//ShowWindow(ghWnd, nCmdShow);
+	//UpdateWindow(ghWnd);
 
 	return TRUE;
 }
@@ -186,7 +208,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
-			if (IDCANCEL == MessageBox(NULL, L"hddblink\n\n [Cancel] - exit program", L"about", MB_OKCANCEL))
+			if (IDCANCEL == MessageBox(NULL, L"hddblink\n\n [Cancel] - exit program", L"about",
+				MB_OKCANCEL | MB_SETFOREGROUND))
 			{
 				DestroyWindow(ghWnd);
 			}
@@ -255,6 +278,7 @@ void SetIcon(int icon)
 		nidApp.uFlags = NIF_ICON;
 		nidApp.hIcon = gIcons[icon];
 		Shell_NotifyIcon(NIM_MODIFY, &nidApp);
+		//MessageBeep(0);
 	}
 }
 
@@ -267,10 +291,10 @@ void PollHdd()
 	//	SetIcon(2);
 	//f++;
 
-	DWORD dwtype;
-	PDH_RAW_COUNTER cvalue[2];
 	static LONGLONG prevv[2] = {};
+	PDH_RAW_COUNTER cvalue[2];
 	LONGLONG res[2];
+	DWORD dwtype;
 
 	if (ERROR_SUCCESS != PdhCollectQueryData(Query))
 	{
@@ -284,10 +308,12 @@ void PollHdd()
 	{
 		goto poll_error;
 	}
+
 	res[0] = prevv[0] - cvalue[0].FirstValue;
 	res[1] = prevv[1] - cvalue[1].FirstValue;
 	prevv[0] = cvalue[0].FirstValue;
 	prevv[1] = cvalue[1].FirstValue;
+
 	if (!res[0] && !res[1])
 	{
 		SetIcon(0);
@@ -308,6 +334,8 @@ void PollHdd()
 	return;
 
 poll_error:
-	KillTimer(ghWnd, IDT_TIMER1);
+	//KillTimer(ghWnd, IDT_TIMER1);
+	gStop = true;
 	SetIcon(4);
 }
+

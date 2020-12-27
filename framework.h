@@ -5,10 +5,11 @@
 // Windows Header Files
 #include <windows.h>
 // C RunTime Header Files
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
-#include <tchar.h>
+//#include <stdlib.h>
+//#include <malloc.h>
+//#include <memory.h>
+//#include <tchar.h>
 #include <shellapi.h>
 #include <pdh.h>
-#include <pdhmsg.h>
+//#include <pdhmsg.h>
+//#include <process.h>
