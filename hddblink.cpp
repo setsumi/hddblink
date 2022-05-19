@@ -61,7 +61,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	nidApp.hWnd = (HWND)ghWnd;
 	nidApp.uID = IDI_SYSTRAY;
 	nidApp.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-	nidApp.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	nidApp.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON5));
 	nidApp.uCallbackMessage = WM_USER_SHELLICON;
 	LoadString(hInstance, IDS_APPTOOLTIP, nidApp.szTip, MAX_LOADSTRING);
 
@@ -78,11 +78,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		MessageBox(NULL, L"PdhOpenQuery failed", L"", MB_ICONERROR | MB_OK);
 	}
-	if (ERROR_SUCCESS != PdhAddCounter(Query, L"\\PhysicalDisk(*)\\% Disk Read Time", 0, &gCounter[0]))
+	if (ERROR_SUCCESS != PdhAddCounter(Query, L"\\PhysicalDisk(_Total)\\% Disk Read Time", 0, &gCounter[0]))
 	{
 		MessageBox(NULL, L"PdhAddCounter (read) failed", L"", MB_ICONERROR | MB_OK);
 	}
-	if (ERROR_SUCCESS != PdhAddCounter(Query, L"\\PhysicalDisk(*)\\% Disk Write Time", 0, &gCounter[1]))
+	if (ERROR_SUCCESS != PdhAddCounter(Query, L"\\PhysicalDisk(_Total)\\% Disk Write Time", 0, &gCounter[1]))
 	{
 		MessageBox(NULL, L"PdhAddCounter (write) failed", L"", MB_ICONERROR | MB_OK);
 	}
@@ -152,7 +152,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_HDDBLINK);
 	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_HDDBLINK));
 
 	return RegisterClassExW(&wcex);
 }
